@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flip Timer</title><meta name="description" content="A full-screen visual countdown with flip-clock minutes and an orange time-remaining bar.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ef782b'/%3E%3Crect x='7' y='5' width='18' height='22' rx='3' fill='%23181818'/%3E%3Cpath d='M7 16h18' stroke='white'/%3E%3C/svg%3E">
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#20201e;background:#f7f7f3;font-synthesis:none;--orange:#f08035;--card:#202120;--h:clamp(160px,37vw,420px);--digit:calc(var(--h)*.87)}
+*{box-sizing:border-box}body{margin:0}button,input{font:inherit}button{cursor:pointer;border:0}button:focus-visible,input:focus-visible{outline:3px solid #254dd4;outline-offset:5px}button:disabled{cursor:default;opacity:.55}
+.app{min-height:100svh;display:flex;flex-direction:column;padding:30px 4vw 22px;gap:26px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:18px;letter-spacing:-.5px;margin:0;font-weight:650}.brand{display:flex;align-items:center;gap:10px}.mark{width:18px;height:23px;border-radius:4px;background:var(--orange);position:relative}.mark:after{content:'';position:absolute;top:11px;width:100%;height:2px;background:#f7f7f3}.fullscreen{display:flex;align-items:center;gap:9px;background:transparent;padding:10px;font-size:14px;color:#50514b}.fullscreen svg{width:19px;height:19px}
+.stage{flex:1;min-height:340px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:1px solid #deded7;border-radius:28px;overflow:hidden;padding:60px 20px 50px;isolation:isolate}.fill{position:absolute;inset:0;background:var(--orange);top:calc((1 - var(--remaining,1))*100%);z-index:-1;transition:top .15s linear}.stage-label{position:absolute;top:25px;left:28px;font-size:13px;letter-spacing:2px;font-weight:600}.status{position:absolute;right:28px;top:25px;font-size:14px}.clock{display:flex;gap:clamp(12px,2.6vw,36px);perspective:1200px}.digit{width:calc(var(--h)*.68);height:var(--h);position:relative;border-radius:17px;background:var(--card);box-shadow:0 24px 60px -16px #38241438,0 9px 25px -12px #0003;perspective:1000px}.half{position:absolute;left:0;width:100%;height:50%;overflow:hidden;background:#232423;color:#fff}.half span{position:absolute;left:0;width:100%;height:var(--h);display:flex;align-items:center;justify-content:center;font-size:var(--digit);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.055em;padding-right:.055em;line-height:1}.top{top:0;border-radius:17px 17px 0 0;background:#202120}.bottom{bottom:0;border-radius:0 0 17px 17px}.bottom span{top:calc(var(--h)*-.5)}.digit:after{content:'';position:absolute;left:0;right:0;top:50%;height:3px;background:#090909;box-shadow:0 1px 0 #ffffff0d;z-index:5}.hinge{position:absolute;top:calc(50% - 9px);height:18px;width:6px;background:#101110;border-radius:3px;z-index:6}.hinge.left{left:7px}.hinge.right{right:7px}.flap{z-index:4;backface-visibility:hidden}.flap.top{transform-origin:bottom;animation:fold .28s ease-in forwards}.flap.bottom{transform-origin:top;transform:rotateX(90deg);animation:unfold .28s .28s ease-out forwards}@keyframes fold{to{transform:rotateX(-90deg)}}@keyframes unfold{to{transform:rotateX(0)}}
+.precision{margin-top:27px;display:flex;align-items:baseline;gap:12px;font-size:14px}.precision strong{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums}.controls{display:flex;align-items:end;justify-content:center;gap:12px;padding:2px 0 4px}.field{display:flex;flex-direction:column;gap:9px;margin-right:20px}label{font-size:14px;color:#565750}input{width:130px;height:54px;border:1px solid #cdcec6;background:white;border-radius:10px;padding:0 16px;font-size:22px}input:disabled{color:#686961;background:#eee}.action{height:54px;border-radius:10px;padding:0 34px;font-size:17px;font-weight:600;min-width:120px}.go{background:var(--orange);color:#201a13}.reset{background:#d5e7cb;color:#263d20}.footer{text-align:center;font-size:13px;color:#6b6c65;min-height:16px}.error{color:#a32913}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+:fullscreen .app{height:100svh}:fullscreen{background:#f7f7f3}@media(max-width:600px){.app{padding:18px 16px;gap:20px}.stage{border-radius:20px;padding:60px 12px 40px;min-height:320px}.stage-label{left:18px;font-size:12px}.status{right:18px}.field{margin-right:0}input{width:100px}.action{min-width:85px;padding:0 18px}.controls{gap:9px}.fullscreen{font-size:13px}.precision{margin-top:24px}}@media(max-height:650px) and (min-width:601px){:root{--h:clamp(140px,48vh,310px)}.app{gap:14px;padding-top:14px;padding-bottom:10px}.stage{min-height:250px;padding:42px 20px 20px}.precision{margin-top:15px}.stage-label,.status{top:16px}.footer{display:none}}@media(prefers-reduced-motion:reduce){.flap{display:none}.fill{transition:none}}
+
+.clock{align-items:center}.colon{font-size:calc(var(--h)*.45);font-weight:600;line-height:1;color:#242522;padding-bottom:calc(var(--h)*.06)}
+.show-seconds{--h:clamp(68px,22vw,340px);--digit:calc(var(--h)*.87)}.show-seconds .clock{gap:clamp(6px,1.5vw,22px)}
+.precision,.precision strong{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase}.precision{gap:8px}
+.status{display:flex;align-items:center;gap:9px}.status:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.45}.status.running:before{opacity:1;animation:breathe 2.4s ease-in-out infinite}@keyframes breathe{0%,100%{box-shadow:0 0 0 0 #20201e00;opacity:.5;transform:scale(.85)}50%{box-shadow:0 0 0 6px #20201e12;opacity:1;transform:scale(1)}}
+.settings{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}.switch-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px}.switch-label input{appearance:none;width:38px;height:22px;margin:0;padding:0;border:0;border-radius:20px;background:#c8cac2;position:relative;cursor:pointer;transition:background .2s}.switch-label input:before{content:'';position:absolute;width:16px;height:16px;top:3px;left:3px;background:white;border-radius:50%;box-shadow:0 1px 3px #0002;transition:transform .2s}.switch-label input:checked{background:#c35b16}.switch-label input:checked:before{transform:translateX(16px)}
+header,.controls,.settings,.footer{max-height:150px;flex-shrink:0;transition:opacity .25s,max-height .65s cubic-bezier(.22,1,.36,1),padding .65s;overflow:hidden}
+.app{transition:padding .65s cubic-bezier(.22,1,.36,1),gap .65s cubic-bezier(.22,1,.36,1)}
+.stage{transition:border-radius .65s,border-color .65s;flex-shrink:0}
+:fullscreen .app{min-height:0;overflow:hidden}
+:fullscreen .stage{min-height:0;flex-shrink:1}
+:fullscreen .idle{padding:0;gap:0;cursor:none}
+:fullscreen .idle header,:fullscreen .idle .controls,:fullscreen .idle .settings,:fullscreen .idle .footer{opacity:0;max-height:0;min-height:0;padding-top:0;padding-bottom:0;pointer-events:none}
+:fullscreen .idle .stage{border-radius:0;border-color:transparent}
+.water-edge{position:absolute;left:0;top:-19px;width:200%;height:20px;fill:var(--orange);opacity:0;pointer-events:none;animation:ripple 7s linear infinite;animation-play-state:paused}
+.fill.rippling .water-edge{opacity:1;animation-play-state:running}
+.fill.paused .water-edge{animation-play-state:paused}
+@keyframes ripple{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.app,.stage,header,.controls,.settings,.footer,.fill{transition:none}.water-edge{display:none}}
+@media(max-height:650px) and (min-width:601px){.show-seconds{--h:min(22vw,40vh,290px)}}@media(max-width:380px){.settings{gap:14px}.switch-label{font-size:13px}.stage-label{letter-spacing:1px}}
+@media(prefers-reduced-motion:reduce){.status.running:before{animation:none}.switch-label input,.switch-label input:before,header,.controls,.settings,.footer{transition:none}}
+</style>
+</head>
+<body><main class="app">
+<header><div class="brand"><span class="mark" aria-hidden="true"></span><h1>Flip Timer</h1></div><button class="fullscreen" id="fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg><span>Full screen</span></button></header>
+<section class="stage" aria-label="Countdown timer"><div class="fill" id="fill" aria-hidden="true"><svg class="water-edge" viewBox="0 0 1200 20" preserveAspectRatio="none"><path d="M0 10 Q75 0 150 10 T300 10 T450 10 T600 10 T750 10 T900 10 T1050 10 T1200 10 V20 H0Z"/></svg></div><span class="stage-label" id="stage-label">MINUTES REMAINING</span><span class="status" id="status" role="status">Ready</span><div class="clock" id="clock" aria-hidden="true"></div><div class="precision"><strong id="precise">60:00</strong><span>remaining</span></div><span class="sr-only" id="accessible-time" role="timer">60 minutes remaining</span></section>
+<form class="controls" id="controls"><div class="field"><label for="minutes">Enter minutes</label><input id="minutes" type="number" min="1" max="99" step="1" value="60" inputmode="numeric" required></div><button class="action go" id="go" type="button">Go</button><button class="action reset" id="reset" type="button">Reset</button></form>
+<div class="settings"><label class="switch-label"><input type="checkbox" role="switch" id="show-seconds">Show seconds</label><label class="switch-label"><input type="checkbox" role="switch" id="animate-background">Animate background</label></div>
+<div class="footer" id="hint">Space to start / pause <span aria-hidden="true">·</span> R to reset <span aria-hidden="true">·</span> F for full screen</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+// Keep button contents stable between pointer-down and pointer-up.
+function setText(id,value){if($(id).textContent!==value)$(id).textContent=value;}
+const state={total:3600000,remaining:3600000,deadline:0,running:false,started:false};
+let previous='',lastSecond=-1;
+const preferences={seconds:false,background:false};
+try{const saved=JSON.parse(localStorage.getItem('flip-timer-preferences')||'{}');preferences.seconds=saved.seconds===true;preferences.background=saved.background===true;}catch{}
+$('show-seconds').checked=preferences.seconds;$('animate-background').checked=preferences.background;
+function savePreferences(){try{localStorage.setItem('flip-timer-preferences',JSON.stringify(preferences));}catch{}}
+for(const [id,key] of [['show-seconds','seconds'],['animate-background','background']]){$(id).addEventListener('change',()=>{if(key==='seconds'){changeSeconds($(id).checked);}else{preferences[key]=$(id).checked;render(false);}savePreferences();});}
+
+// Animate between the two real layouts; the countdown state is unchanged.
+let layoutAnimations=[];
+function changeSeconds(enabled){
+const clock=$('clock'),precision=document.querySelector('.precision');
+const before=[...clock.children].slice(0,2).map(card=>card.getBoundingClientRect());
+const precisionBefore=precision.getBoundingClientRect();
+layoutAnimations.forEach(animation=>animation.cancel());layoutAnimations=[];
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reduce&&!enabled){
+[...clock.children].slice(2).forEach(card=>{
+const rect=card.getBoundingClientRect(),style=getComputedStyle(card),ghost=card.cloneNode(true);
+ghost.setAttribute('aria-hidden','true');
+Object.assign(ghost.style,{position:'fixed',left:rect.left+'px',top:rect.top+'px',width:rect.width+'px',height:rect.height+'px',margin:'0',pointerEvents:'none',zIndex:'20'});
+ghost.style.setProperty('--h',style.getPropertyValue('--h'));ghost.style.setProperty('--digit',style.getPropertyValue('--digit'));
+document.body.append(ghost);
+const fade=ghost.animate([{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.88)'}],{duration:180,easing:'ease-out'});
+fade.finished.catch(()=>{}).finally(()=>ghost.remove());layoutAnimations.push(fade);
+});
+}
+preferences.seconds=enabled;render(false);
+if(reduce)return;
+const options={duration:440,easing:'cubic-bezier(.22,1,.36,1)'};
+[...clock.children].forEach((card,i)=>{
+if(i<2){const after=card.getBoundingClientRect(),from=before[i];if(!from)return;
+layoutAnimations.push(card.animate([{transformOrigin:'top left',transform:`translate(${from.left-after.left}px,${from.top-after.top}px) scale(${from.width/after.width},${from.height/after.height})`},{transformOrigin:'top left',transform:'none'}],options));
+}else{layoutAnimations.push(card.animate([{opacity:0,transform:'scale(.88)'},{opacity:1,transform:'scale(1)'}],{...options,delay:70,fill:'backwards'}));}
+});
+const after=precision.getBoundingClientRect();
+layoutAnimations.push(precision.animate([{transform:`translateY(${precisionBefore.top-after.top}px)`},{transform:'none'}],options));
+}
+function half(value,position,flap=false){const el=document.createElement('div');el.className='half '+position+(flap?' flap':'');const span=document.createElement('span');span.textContent=value;el.append(span);return el;}
+function drawDigits(value,animate=true){const text=String(value).padStart(2,'0');if(text===previous)return;if(text.length!==previous.length){$('clock').replaceChildren();previous='';}[...text].forEach((n,i)=>{let card=$('clock').children[i];if(!card){card=document.createElement('div');card.className=n===':'?'colon':'digit';$('clock').append(card);}if(n===':'){card.textContent=':';return;}const shouldFlip=animate&&previous[i]&&previous[i]!==n&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const baseBottom=half(shouldFlip?previous[i]:n,'bottom');
+card.replaceChildren(half(n,'top'),baseBottom);
+if(shouldFlip){
+const top=half(previous[i],'top',true),bottom=half(n,'bottom',true);
+card.append(top,bottom);
+let completed=false;
+const finish=()=>{if(completed)return;completed=true;baseBottom.children[0].textContent=n;top.remove();bottom.remove();};
+bottom.addEventListener('animationend',finish,{once:true});
+// Fallback for cancelled animations or tabs that stop delivering animation events.
+setTimeout(finish,700);
+}for(const side of ['left','right']){const hinge=document.createElement('i');hinge.className='hinge '+side;card.append(hinge);}});previous=text;}
+function render(animate=true){const seconds=Math.ceil(state.remaining/1000);document.querySelector('.app').classList.toggle('show-seconds',preferences.seconds);drawDigits(preferences.seconds?String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'):Math.ceil(seconds/60),animate);$('stage-label').textContent=preferences.seconds?'TIME REMAINING':'MINUTES REMAINING';const level=preferences.background?Math.max(0,Math.min(1,state.remaining/state.total)):1;$('fill').style.setProperty('--remaining',level);$('fill').classList.toggle('rippling',preferences.background&&level>0&&level<1);$('fill').classList.toggle('paused',!state.running);$('precise').textContent=preferences.seconds?Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0'):Math.ceil(seconds/60)+' min';if(seconds!==lastSecond){$('accessible-time').textContent=Math.floor(seconds/60)+' minutes '+seconds%60+' seconds remaining';lastSecond=seconds;}setText('status',state.running?'Running':state.remaining===0?'Time’s up':state.started?'Paused':'Ready');$('status').classList.toggle('running',state.running);setText('go',state.running?'Pause':state.remaining===0?'Again':state.started?'Resume':'Go');$('minutes').disabled=state.started;}
+function configure(){const minutes=Number($('minutes').value);if(!Number.isInteger(minutes)||minutes<1||minutes>99){$('minutes').reportValidity();return false;}state.total=minutes*60000;state.remaining=state.total;return true;}
+function tick(){if(state.running){state.remaining=Math.max(0,state.deadline-performance.now());if(state.remaining===0)state.running=false;render();}}
+function toggle(){if(state.running){tick();state.running=false;}else{if((!state.started||state.remaining===0)&&!configure())return;state.started=true;state.deadline=performance.now()+state.remaining;state.running=true;}render();}
+function reset(){state.running=false;state.started=false;$('minutes').disabled=false;if(!configure()){state.remaining=state.total;$('minutes').value=state.total/60000;}render(false);}
+$('go').addEventListener('click',toggle);
+$('controls').addEventListener('submit',event=>{event.preventDefault();toggle();});
+$('minutes').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();toggle();}});$('reset').addEventListener('click',reset);$('minutes').addEventListener('change',()=>{if(!state.started&&configure())render(false);});
+async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('unsupported');}catch{$('hint').textContent='Use your browser’s full-screen option to expand the timer.';}}
+$('fullscreen').addEventListener('click',fullscreen);document.addEventListener('fullscreenchange',()=>{$('fullscreen').querySelector('span').textContent=document.fullscreenElement?'Exit full screen':'Full screen';});document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select,[contenteditable]')||e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;if(e.key.toLowerCase()==='r'){e.preventDefault();reset();}if(e.code==='Space'&&!e.target.matches('button')){e.preventDefault();toggle();}if(e.key.toLowerCase()==='f')fullscreen();});document.addEventListener('visibilitychange',tick);setInterval(tick,100);render(false);
+let idleTimeout;
+function showControls(){
+const app=document.querySelector('.app');app.classList.remove('idle');clearTimeout(idleTimeout);
+if(document.fullscreenElement)idleTimeout=setTimeout(()=>{
+if(document.fullscreenElement)app.classList.add('idle');
+},10000);
+}
+// Only activity delivered inside this document resets the idle clock.
+for(const event of ['pointermove','pointerdown','click','keydown','wheel','touchstart','focusin','fullscreenchange'])document.addEventListener(event,showControls,{passive:true});
+if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'control_timer',description:'Set, start, pause, reset or read the visible countdown timer.',inputSchema:{type:'object',properties:{action:{type:'string',enum:['set','start','pause','reset','read']},minutes:{type:'integer',minimum:1,maximum:99}},required:['action'],additionalProperties:false},async execute(input){if(!input||!['set','start','pause','reset','read'].includes(input.action))throw Error('Invalid action');if(input.action==='set'){if(!Number.isInteger(input.minutes)||input.minutes<1||input.minutes>99)throw Error('Minutes must be a whole number from 1 to 99');$('minutes').value=input.minutes;reset();}if(input.action==='start'&&!state.running)toggle();if(input.action==='pause'&&state.running)toggle();if(input.action==='reset')reset();tick();return{running:state.running,remainingSeconds:Math.ceil(state.remaining/1000),totalMinutes:state.total/60000};}})).catch(()=>{});}catch{}}
+</script></body></html>
